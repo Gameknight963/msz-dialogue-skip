@@ -21,6 +21,7 @@ namespace msz_dialogue_skip
             configPath = Path.Combine(MelonEnvironment.ModsDirectory, "msz dialogue skip", "skip_key.cfg");
             Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
             if (!File.Exists(configPath)) File.WriteAllText(configPath, skipKeyCode.ToString());
+            else ApplyConfig();
             configWatcher = new FileSystemWatcher
             {
                 Path = Path.GetDirectoryName(configPath)!,
@@ -31,10 +32,12 @@ namespace msz_dialogue_skip
             configWatcher.Changed += ConfigWatcher_Changed;
         }
 
-        private void ConfigWatcher_Changed(object sender, FileSystemEventArgs e)
+        private void ConfigWatcher_Changed(object sender, FileSystemEventArgs e) => ApplyConfig();
+
+        void ApplyConfig()
         {
-            if (configPath == null) return; // weird Melonloader init?
-            string text = File.ReadAllText(configPath);
+            // never null otherwise the filesystemwatcher wouldn't work
+            string text = File.ReadAllText(configPath!);
             if (!Enum.TryParse(text, out KeyCode result))
             {
                 LoggerInstance.Error($"skip_key.cfg: '{text}' is not a valid key");
