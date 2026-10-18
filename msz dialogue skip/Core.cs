@@ -50,6 +50,11 @@ namespace msz_dialogue_skip
             {
                 if (handleNodeCoroutine != null) __instance.StopCoroutine(handleNodeCoroutine);
                 handleNodeCoroutine = __instance.StartCoroutine(__instance.HandleNode(node, tree));
+                if (__instance.dialogueCanvas.enabled && __instance.dialogueCanvas.alpha != 1f)
+                {
+                    // If this is reached, a skip skipped the fade in animation, fix it manually
+                    __instance.dialogueCanvas.alpha = 1f;
+                }
             }
         }
     }
