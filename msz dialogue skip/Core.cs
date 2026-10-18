@@ -1,18 +1,52 @@
 ﻿using MelonLoader;
+using MelonLoader.Utils;
 using HarmonyLib;
 using Il2Cpp;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(msz_dialogue_skip.Core), "msz dialogue skip", "1.0.0", "Gameknight963", null)]
+[assembly: MelonInfo(typeof(msz_dialogue_skip.Core), "msz dialogue skip", "1.1.0", "Gameknight963", null)]
 [assembly: MelonAuthorColor(255, 86, 65, 157)]
 
 namespace msz_dialogue_skip
 {
     public class Core : MelonMod
     {
+        KeyCode skipKeyCode = KeyCode.Space;
+
+        string? configPath;
+        FileSystemWatcher? configWatcher;
+
+        public override void OnInitializeMelon()
+        {
+            configPath = Path.Combine(MelonEnvironment.ModsDirectory, "msz dialogue skip", "skip_key.cfg");
+            Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+            if (!File.Exists(configPath)) File.WriteAllText(configPath, skipKeyCode.ToString());
+            configWatcher = new FileSystemWatcher
+            {
+                Path = Path.GetDirectoryName(configPath)!,
+                Filter = Path.GetFileName(configPath),
+                NotifyFilter = NotifyFilters.LastWrite,
+                EnableRaisingEvents = true
+            };
+            configWatcher.Changed += ConfigWatcher_Changed;
+        }
+
+        private void ConfigWatcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            if (configPath == null) return; // weird Melonloader init?
+            string text = File.ReadAllText(configPath);
+            if (!Enum.TryParse(text, out KeyCode result))
+            {
+                LoggerInstance.Error($"skip_key.cfg: '{text}' is not a valid key");
+                return;
+            }
+            LoggerInstance.Msg($"Skip key changed to '{text}'");
+            skipKeyCode = result;
+        }
+
         public override void OnUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.Space) && _tree)
+            if (Input.GetKeyDown(skipKeyCode) && _tree)
             {
                 _tree?.ContinueToNextNode();
             }
