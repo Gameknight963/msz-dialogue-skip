@@ -12,7 +12,7 @@ namespace msz_dialogue_skip
     {
         public override void OnUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.Space) && _tree )
+            if (Input.GetKeyDown(KeyCode.Space) && _tree)
             {
                 _tree?.ContinueToNextNode();
             }
